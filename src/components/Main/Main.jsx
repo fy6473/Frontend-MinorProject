@@ -1,326 +1,251 @@
 import { Context } from "../../context/Context";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useEffect, useState, useContext } from "react";
-import { Image, Mic, Send, Sparkles, Copy } from "lucide-react";
+import { useEffect, useState, useContext, useRef } from "react";
+import { Image, Mic, Send, Sparkles, X, Loader2 } from "lucide-react";
 import { assets } from "../../assets/assets";
+
+// Import Council Stages
+import Stage1 from '../../components2/Stage1';
+import Stage2 from '../../components2/Stage2';
+import Stage3 from '../../components2/Stage3';
+
+import '../../App.css';
 
 const Main = () => {
     const {
-        input,
-        setInput,
-        currentChat,
-        showResult,
-        setShowResult,
-        loading,
-        onSent,
+        input, setInput,
+        currentChat, currentConversation,
+        loading, isLLMLoading,
+        onSent, handleSendLLMMessage,
+        PageView, currentConversationId,
+        loadConversations, loadConversation
     } = useContext(Context);
 
     const [listening, setListening] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
-    const [speaking, setSpeaking] = useState(false);
+    const chatContainerRef = useRef(null);
 
-    /* 🎤 Voice */
+    const isLLM = PageView === 'llm-chat';
+
+    // Load conversation data when in LLM Mode
+    useEffect(() => {
+        if (isLLM) {
+            loadConversations();
+            if (currentConversationId) {
+                loadConversation(currentConversationId);
+            }
+        }
+    }, [isLLM, currentConversationId]);
+
+    // Auto-scroll to bottom on new messages
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [currentChat, currentConversation, loading, isLLMLoading]);
+
+    const handleSendMessage = () => {
+        if (input.trim() || (selectedImage && !isLLM)) {
+            const message = input;
+            setInput("");
+            if (isLLM) {
+                handleSendLLMMessage(message);
+            } else {
+                onSent(message, selectedImage);
+            }
+            setSelectedImage(null);
+        }
+    };
+
     const startListening = () => {
-        const SpeechRecognition =
-            window.SpeechRecognition || window.webkitSpeechRecognition;
-
-        if (!SpeechRecognition) return alert("Speech not supported");
-
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return alert("Speech recognition not supported in this browser.");
         const recognition = new SpeechRecognition();
-        recognition.lang = "en-US";
         recognition.start();
-
         setListening(true);
-
-        recognition.onresult = (e) => {
-            setInput(e.results[0][0].transcript);
-            setListening(false);
-        };
-
+        recognition.onresult = (e) => { setInput(e.results[0][0].transcript); setListening(false); };
         recognition.onend = () => setListening(false);
     };
 
-    /* 🔊 Speak */
-    const speakText = (text) => {
-        if (!window.speechSynthesis) return;
-
-        if (speechSynthesis.speaking) {
-            speechSynthesis.cancel();
-            setSpeaking(false);
-            return;
-        }
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.onstart = () => setSpeaking(true);
-        utterance.onend = () => setSpeaking(false);
-
-        speechSynthesis.speak(utterance);
-    };
-
-    /* 📋 Copy */
-    const copyToClipboard = (text) => {
-        navigator.clipboard.writeText(text);
-    };
-
-    const copyFullChat = () => {
-        const fullText = currentChat.messages
-            .map((m) => `${m.role.toUpperCase()}:\n${m.text}`)
-            .join("\n\n");
-        navigator.clipboard.writeText(fullText);
-    };
-
-    /* 🖼 Image */
-    const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onloadend = () => setSelectedImage(reader.result);
-        reader.readAsDataURL(file);
-    };
-
-    /* 🔥 Auto Scroll */
-    useEffect(() => {
-        const chatContainer = document.getElementById("chat-container");
-        if (chatContainer) {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-    }, [currentChat, loading]);
+    const activeChat = isLLM ? currentConversation : currentChat;
+    const isActiveLoading = isLLM ? isLLMLoading : loading;
 
     return (
         <div className="flex-1 h-screen bg-white dark:bg-slate-950 dark:text-gray-100 flex flex-col">
-
+            
             {/* HEADER */}
-            <div className="flex items-center justify-between font-semibold text-xl md:text-2xl p-4 text-gray-500 dark:text-gray-300">
-                <p
-                    onClick={() => setShowResult(false)}
-                    className="cursor-pointer hover:opacity-70 transition"
-                >
-                    LLM Council
-                </p>
-
-                <div className="flex items-center gap-4">
-                    {showResult && (
-                        <Copy
-                            size={20}
-                            className="cursor-pointer hover:text-blue-500"
-                            onClick={copyFullChat}
-                            title="Copy Full Chat"
-                        />
+            <div className="flex items-center justify-between font-semibold p-4 border-b dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                    {isLLM ? (
+                        <Sparkles className="text-purple-500 animate-pulse" size={20} />
+                    ) : (
+                        <div className="w-3 h-3 bg-blue-500 rounded-full" />
                     )}
-
-                    <img
-                        src={assets.user_icon}
-                        alt="User"
-                        className="w-9 h-9 rounded-full object-cover border border-gray-300 dark:border-slate-600"
-                    />
+                    <h1 className="text-lg text-gray-700 dark:text-gray-200">
+                        {isLLM ? "LLM Council" : "Normal AiChat"}
+                    </h1>
                 </div>
+                <img src={assets.user_icon} className="w-8 h-8 rounded-full border dark:border-slate-700" alt="user" />
             </div>
 
-            {/* CHAT */}
-            <div
-                id="chat-container"
-                className="flex-1 overflow-y-auto px-4 md:px-32 pb-20"
-            >
-                {!showResult ? (
-                    <div className="mt-16">
-                        <p className="text-4xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 bg-clip-text text-transparent">
-                            Hello, User 👋
-                        </p>
-                        <p className="text-xl text-gray-600 dark:text-gray-300 mt-3">
-                            How can we help you today?
+            {/* MAIN CONTENT AREA */}
+            <div ref={chatContainerRef} className="flex-1 overflow-y-auto">
+                {!activeChat || activeChat.messages.length === 0 ? (
+                    /* PREVIOUS STYLE: Left-aligned Gradient Welcome */
+                    <div className="max-w-4xl mx-auto mt-12 px-6">
+                        <div className="text-5xl font-semibold">
+                            <p className="bg-gradient-to-r from-[#4b90ff] to-[#ff5546] bg-clip-text text-transparent inline-block">
+                                {isLLM ? "Hello, Council User" : "Hello, User"}
+                            </p>
+                        </div>
+                        <p className="text-4xl text-gray-300 dark:text-gray-700 font-medium mt-2">
+                            {isLLM ? "How can the council assist your query?" : "How can I help you today?"}
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-6 mt-6">
-                        {currentChat?.messages.map((msg, index) => {
-                            const isUser = msg.role === "user";
-
-                            return (
-                                <div
-                                    key={index}
-                                    className={`flex items-end gap-3 ${isUser ? "justify-end" : "justify-start"
-                                        }`}
-                                >
-                                    {!isUser && (
-                                        <div className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
-                                            <Sparkles size={18} />
+                    <div className="max-w-4xl mx-auto px-4 py-8 space-y-10">
+                        {activeChat.messages.map((msg, index) => (
+                            <div key={index} className="flex flex-col">
+                                {msg.role === 'user' ? (
+                                    /* User Message */
+                                    <div className="flex items-start gap-4 justify-end mb-4">
+                                        <div className="bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-2xl max-w-[80%] shadow-sm">
+                                            {/* Fix: className moved to wrapper div */}
+                                            <div className="text-sm md:text-base leading-relaxed">
+                                                <ReactMarkdown>{msg.text || msg.content}</ReactMarkdown>
+                                            </div>
                                         </div>
-                                    )}
-
-                                    <div
-                                        className={`relative max-w-xl px-4 py-3 rounded-2xl shadow-sm ${isUser
-                                            ? "bg-blue-500 text-white rounded-br-none"
-                                            : "bg-gray-200 dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-bl-none"
-                                            }`}
-                                    >
-                                        {msg.image && (
-                                            <img
-                                                src={msg.image}
-                                                alt="uploaded"
-                                                className="w-40 rounded-xl mb-2"
-                                            />
-                                        )}
-
-                                        {isUser ? (
-                                            <p>{msg.text}</p>
-                                        ) : (
-                                            <>
-                                                {/* Copy Message */}
-                                                <Copy
-                                                    size={16}
-                                                    className="absolute top-2 right-2 cursor-pointer opacity-60 hover:opacity-100"
-                                                    onClick={() => copyToClipboard(msg.text)}
-                                                />
-
-                                                <button
-                                                    onClick={() => speakText(msg.text)}
-                                                    className="mb-2 text-xs px-2 py-1 bg-blue-500 text-white rounded-lg"
-                                                >
-                                                    {speaking ? "⏹ Stop" : "🔊 Speak"}
-                                                </button>
-                                                <div
-                                                    className="
-  prose dark:prose-invert max-w-none
-  prose-p:leading-relaxed
-  prose-headings:font-semibold
-  prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
-  prose-ul:list-disc prose-ul:pl-5
-  prose-ol:list-decimal prose-ol:pl-5
-  prose-li:my-1
-  prose-hr:hidden
-  prose-pre:bg-slate-900 prose-pre:text-white prose-pre:rounded-xl prose-pre:p-4
-  prose-p:text-gray-800 dark:prose-p:text-gray-200
-  prose-code:bg-slate-800 prose-code:text-green-400 prose-code:px-1 prose-code:py-0.5 prose-code:rounded
-  "
-                                                >
-
-                                                    <ReactMarkdown
-                                                        remarkPlugins={[remarkGfm]}
-                                                        components={{
-                                                            code({ inline, className, children }) {
-                                                                return !inline ? (
-                                                                    <div className="relative">
-                                                                        <Copy
-                                                                            size={14}
-                                                                            className="absolute top-2 right-2 cursor-pointer text-white"
-                                                                            onClick={() =>
-                                                                                copyToClipboard(
-                                                                                    String(children).replace(/\n$/, "")
-                                                                                )
-                                                                            }
-                                                                        />
-                                                                        <pre className="overflow-x-auto">
-                                                                            <code>{children}</code>
-                                                                        </pre>
-                                                                    </div>
-                                                                ) : (
-                                                                    <code>{children}</code>
-                                                                );
-                                                            },
-                                                        }}
-                                                    >
-                                                        {msg.text}
-                                                    </ReactMarkdown>
-                                                </div>
-                                            </>
-                                        )}
+                                        <img src={assets.user_icon} className="w-8 h-8 rounded-full border dark:border-slate-700" alt="" />
                                     </div>
+                                ) : (
+                                    /* Assistant / Council Message */
+                                    <div className="flex items-start gap-4 mb-4">
+                                        <div className="p-2 bg-blue-50 dark:bg-slate-800 rounded-full h-fit shadow-sm">
+                                            <Sparkles size={20} className={isLLM ? "text-purple-500" : "text-blue-500"} />
+                                        </div>
+                                        <div className="flex-1 space-y-6 overflow-hidden">
+                                            {/* Normal Normal AiChat Mode */}
+                                            {!isLLM && (
+                                                <div className="prose dark:prose-invert max-w-none text-sm md:text-base leading-relaxed">
+                                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                                                </div>
+                                            )}
 
-                                    {isUser && (
-                                        <img
-                                            src={assets.user_icon}
-                                            alt="User"
-                                            className="w-9 h-9 rounded-full object-cover border border-gray-300 dark:border-slate-600"
-                                        />
-                                    )}
-                                </div>
-                            );
-                        })}
+                                            {/* LLM Council Mode (Multi-Stage Rendering) */}
+                                            {isLLM && (
+                                                <div className="space-y-8">
+                                                    {/* Stage 1 */}
+                                                    {msg.loading?.stage1 && (
+                                                        <div className="flex items-center gap-3 text-sm text-blue-400 bg-blue-50/50 dark:bg-blue-900/10 p-3 rounded-xl border border-blue-100 dark:border-blue-900/30">
+                                                            <Loader2 className="animate-spin" size={16} /> 
+                                                            <span>Gathering individual insights from models...</span>
+                                                        </div>
+                                                    )}
+                                                    {msg.stage1 && <Stage1 responses={msg.stage1} />}
 
-                        {loading && (
-                            <div className="flex justify-start items-end gap-3">
-                                <div className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700">
-                                    <Sparkles size={18} />
-                                </div>
-                                <div className="bg-gray-200 dark:bg-slate-800 px-4 py-3 rounded-2xl rounded-bl-none animate-pulse">
-                                    Thinking...
-                                </div>
+                                                    {/* Stage 2 */}
+                                                    {msg.loading?.stage2 && (
+                                                        <div className="flex items-center gap-3 text-sm text-amber-500 bg-amber-50/50 dark:bg-amber-900/10 p-3 rounded-xl border border-amber-100 dark:border-amber-900/30">
+                                                            <Loader2 className="animate-spin" size={16} /> 
+                                                            <span>Ranking and Peer Reviewing responses...</span>
+                                                        </div>
+                                                    )}
+                                                    {msg.stage2 && (
+                                                        <Stage2 
+                                                            rankings={msg.stage2} 
+                                                            labelToModel={msg.metadata?.label_to_model}
+                                                            aggregateRankings={msg.metadata?.aggregate_rankings} 
+                                                        />
+                                                    )}
+
+                                                    {/* Stage 3 */}
+                                                    {msg.loading?.stage3 && (
+                                                        <div className="flex items-center gap-3 text-sm text-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/10 p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
+                                                            <Loader2 className="animate-spin" size={16} /> 
+                                                            <span>Drafting final peer-reviewed consensus...</span>
+                                                        </div>
+                                                    )}
+                                                    {msg.stage3 && <Stage3 finalResponse={msg.stage3} />}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        ))}
+                    </div>
+                )}
+
+                {/* ANIMATED LOADING SKELETON */}
+                {isActiveLoading && (
+                    <div className="max-w-4xl mx-auto px-16 py-4">
+                        <div className="flex flex-col gap-2 w-full animate-pulse">
+                            <hr className="rounded-md border-none bg-gray-100 dark:bg-slate-800 h-4 bg-gradient-to-r from-[#81afff] via-[#ffffff] to-[#81afff] bg-[length:800px_50px]" />
+                            <hr className="rounded-md border-none bg-gray-100 dark:bg-slate-800 h-4 bg-gradient-to-r from-[#81afff] via-[#ffffff] to-[#81afff] bg-[length:800px_50px]" />
+                            <hr className="rounded-md border-none bg-gray-100 dark:bg-slate-800 h-4 w-[70%] bg-gradient-to-r from-[#81afff] via-[#ffffff] to-[#81afff] bg-[length:800px_50px]" />
+                        </div>
                     </div>
                 )}
             </div>
 
-            {/* INPUT */}
-            <div className="border-t dark:border-slate-700 p-4 bg-white dark:bg-slate-900">
-                <div className="max-w-4xl mx-auto bg-gray-200 dark:bg-slate-800 rounded-3xl p-3 flex flex-col gap-3">
-
-                    {selectedImage && (
-                        <div className="relative w-fit">
-                            <img
-                                src={selectedImage}
-                                alt="preview"
-                                className="w-32 rounded-xl"
-                            />
-                            <button
-                                onClick={() => setSelectedImage(null)}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6"
-                            >
-                                ✕
+            {/* INPUT AREA */}
+            <div className="p-4 bg-white dark:bg-slate-950">
+                <div className="max-w-4xl mx-auto relative group">
+                    {selectedImage && !isLLM && (
+                        <div className="relative w-20 h-20 mb-3 border-2 border-blue-500 rounded-xl overflow-hidden shadow-lg">
+                            <img src={selectedImage} className="w-full h-full object-cover" alt="upload preview" />
+                            <button onClick={()=>setSelectedImage(null)} className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-lg shadow-md hover:bg-red-600 transition-colors">
+                                <X size={14} />
                             </button>
                         </div>
                     )}
-
-                    <div className="flex items-center gap-3">
+                    
+                    <div className="flex items-center gap-3 bg-gray-100 dark:bg-slate-900 px-6 py-3 rounded-full border dark:border-slate-800 focus-within:bg-white dark:focus-within:bg-slate-800 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all shadow-sm">
                         <textarea
+                            className="flex-1 bg-transparent border-none outline-none text-base py-1 resize-none max-h-40 overflow-y-auto"
+                            placeholder={isLLM ? "Consult the Council Experts..." : "Enter a prompt here"}
+                            rows={1}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Enter a prompt here"
-                            rows={1}
-                            className="flex-1 bg-transparent outline-none text-lg resize-none overflow-y-auto max-h-40"
                             onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                    e.preventDefault(); // prevent new line
-                                    if (input.trim()) {
-                                        const message = input;
-                                        setInput("");
-                                        onSent(message, selectedImage);
-                                        setSelectedImage(null);
-                                    }
-                                }
-                            }}
-                            onInput={(e) => {
-                                e.target.style.height = "auto";
-                                e.target.style.height = e.target.scrollHeight + "px";
-                            }}
-                        />
-
-                        <label className="cursor-pointer">
-                            <Image size={22} />
-                            <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-                        </label>
-
-                        <Mic
-                            size={22}
-                            className="cursor-pointer"
-                            onClick={startListening}
-                            style={{ opacity: listening ? 0.5 : 1 }}
-                        />
-
-                        <Send
-                            className="cursor-pointer"
-                            onClick={() => {
-                                if (input.trim()) {
-                                    const message = input;
-                                    setInput("");
-                                    onSent(message, selectedImage);
-                                    setSelectedImage(null);
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSendMessage();
                                 }
                             }}
                         />
+                        <div className="flex items-center gap-4 text-gray-400">
+                            {/* Images usually only supported in standard chat mode */}
+                            {!isLLM && (
+                                <label className="cursor-pointer hover:text-blue-500 transition-colors">
+                                    <Image size={20} />
+                                    <input type="file" hidden accept="image/*" onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => setSelectedImage(reader.result);
+                                        if(file) reader.readAsDataURL(file);
+                                    }} />
+                                </label>
+                            )}
+                            <Mic 
+                                size={20} 
+                                className={`cursor-pointer transition-colors ${listening ? 'text-red-500' : 'hover:text-blue-500'}`} 
+                                onClick={startListening}
+                            />
+                            {(input || selectedImage) && (
+                                <button 
+                                    onClick={handleSendMessage} 
+                                    className="text-blue-600 hover:scale-110 active:scale-95 transition-all p-1"
+                                >
+                                    <Send size={22} />
+                                </button>
+                            )}
+                        </div>
                     </div>
+                    <p className="text-[10px] text-center text-gray-500 mt-3 font-medium tracking-wide">
+                        Normal AiChat may display inaccurate info. Always verify the Council's final synthesis.
+                    </p>
                 </div>
             </div>
         </div>
