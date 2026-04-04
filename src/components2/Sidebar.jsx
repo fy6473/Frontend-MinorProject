@@ -1,8 +1,8 @@
-import { useState, useEffect,useContext } from 'react';
+import { useContext } from 'react';
 import './Sidebar.css';
-import ContextProvider from '../context/Context'; 
+import { Context } from '../context/Context';
 export default function Sidebar() {
-  const { conversations, currentConversationId, onNewConversation, onSelectConversation, PageView, setPageView } = useContext(ContextProvider);
+  const { conversations, currentConversationId, onNewConversation, onSelectConversation } = useContext(Context);
   return (
     <div className="sidebar">
       <div className="sidebar-header">
@@ -19,9 +19,8 @@ export default function Sidebar() {
           conversations.map((conv) => (
             <div
               key={conv.id}
-              className={`conversation-item ${
-                conv.id === currentConversationId ? 'active' : ''
-              }`}
+              className={`conversation-item ${conv.id === currentConversationId ? 'active' : ''
+                }`}
               onClick={() => onSelectConversation(conv.id)}
             >
               <div className="conversation-title">

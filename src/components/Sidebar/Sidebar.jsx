@@ -31,9 +31,8 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`h-screen ${
-        extended ? "w-64" : "w-20"
-      } flex flex-col justify-between bg-slate-100 dark:bg-slate-900 p-4 transition-all duration-300 border-r border-slate-200 dark:border-slate-800`}
+      className={`h-screen ${extended ? "w-64" : "w-20"
+        } flex flex-col justify-between bg-slate-100 dark:bg-slate-900 p-4 transition-all duration-300 border-r border-slate-200 dark:border-slate-800`}
     >
       {/* TOP SECTION */}
       <div>
@@ -49,22 +48,20 @@ const Sidebar = () => {
         <div className={`flex ${extended ? "flex-row" : "flex-col"} bg-slate-200 dark:bg-slate-800 p-1 rounded-xl gap-1 mb-6`}>
           <button
             onClick={() => setPageView("llm-chat")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all text-xs font-semibold ${
-              PageView === "llm-chat"
-                ? "bg-white dark:bg-slate-700 shadow-sm text-orange-500"
-                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all text-xs font-semibold ${PageView === "llm-chat"
+              ? "bg-white dark:bg-slate-700 shadow-sm text-orange-500"
+              : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
           >
             <Sparkles size={16} />
             {extended && "Council"}
           </button>
           <button
             onClick={() => setPageView("normal-chat")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all text-xs font-semibold ${
-              PageView === "normal-chat"
-                ? "bg-white dark:bg-slate-700 shadow-sm text-blue-500"
-                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all text-xs font-semibold ${PageView === "normal-chat"
+              ? "bg-white dark:bg-slate-700 shadow-sm text-blue-500"
+              : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+              }`}
           >
             <Layers size={16} />
             {extended && "Standard"}
@@ -73,7 +70,7 @@ const Sidebar = () => {
 
         {/* DYNAMIC CONTENT AREA */}
         <div className="flex flex-col">
-          
+
           {/* NEW CONVERSATION BUTTON (Uniform Style) */}
           <div
             onClick={PageView === "llm-chat" ? handleNewConversation : newChat}
@@ -97,11 +94,10 @@ const Sidebar = () => {
                     <div
                       key={conv.id}
                       onClick={() => handleSelectConversation(conv.id)}
-                      className={`group flex items-center justify-between p-2 rounded-xl cursor-pointer transition ${
-                        conv.id === currentConversationId
-                          ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
-                          : "hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
-                      }`}
+                      className={`group flex items-center justify-between p-2 rounded-xl cursor-pointer transition ${conv.id === currentConversationId
+                        ? "bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400"
+                        : "hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                        }`}
                     >
                       <div className="flex items-center gap-3 overflow-hidden">
                         <Sparkles size={16} className="shrink-0" />
@@ -122,11 +118,10 @@ const Sidebar = () => {
                     <div
                       key={chat.id}
                       onClick={() => openChat(chat)}
-                      className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition ${
-                        currentChat?.id === chat.id
-                          ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                          : "hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
-                      }`}
+                      className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer transition ${currentChat?.id === chat.id
+                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                        : "hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
+                        }`}
                     >
                       <MessageCircle size={16} className="shrink-0" />
                       <p className="truncate text-sm font-medium">
@@ -135,12 +130,12 @@ const Sidebar = () => {
                     </div>
                   ))
                 )}
-                
+
                 {/* EMPTY STATES */}
-                {((PageView === "llm-chat" && conversations.length === 0) || 
+                {((PageView === "llm-chat" && conversations.length === 0) ||
                   (PageView === "normal-chat" && chats.length === 0)) && (
-                  <p className="text-xs text-slate-400 px-2 italic">No conversations yet</p>
-                )}
+                    <p className="text-xs text-slate-400 px-2 italic">No conversations yet</p>
+                  )}
               </div>
             </div>
           )}

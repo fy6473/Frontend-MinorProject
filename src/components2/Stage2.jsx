@@ -43,11 +43,10 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
             <button
               key={index}
               onClick={() => setActiveTab(index)}
-              className={`px-4 py-2 rounded-xl text-[11px] md:text-xs font-semibold transition-all whitespace-nowrap snap-ml-2 ${
-                activeTab === index
+              className={`px-4 py-2 rounded-xl text-[11px] md:text-xs font-semibold transition-all whitespace-nowrap snap-ml-2 ${activeTab === index
                   ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-sm border border-amber-100 dark:border-slate-600'
                   : 'text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50'
-              }`}
+                }`}
             >
               {rank.model.split('/')[1] || rank.model}
             </button>
@@ -60,7 +59,7 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
             <Bot size={12} />
             Evaluator: {rankings[activeTab].model}
           </div>
-          
+
           <div className="prose dark:prose-invert prose-sm max-w-none prose-pre:bg-slate-900 dark:prose-pre:bg-black">
             <ReactMarkdown>
               {deAnonymizeText(rankings[activeTab].ranking, labelToModel)}
@@ -76,7 +75,7 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
               <div className="space-y-2">
                 {rankings[activeTab].parsed_ranking.map((label, i) => (
                   <div key={i} className="flex items-center gap-3 text-sm">
-                    <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold">
+                    <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-[10px] font-bold">
                       {i + 1}
                     </span>
                     <span className="font-medium text-slate-700 dark:text-slate-300">
@@ -92,7 +91,7 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
 
       {/* AGGREGATE RANKINGS (LEADERBOARD) */}
       {aggregateRankings && aggregateRankings.length > 0 && (
-        <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+        <div className="bg-linear-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <Trophy size={20} className="text-yellow-500" />
             <h4 className="text-sm font-bold uppercase tracking-widest text-slate-500">
@@ -102,16 +101,15 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
 
           <div className="space-y-3">
             {aggregateRankings.map((agg, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="flex items-center justify-between p-4 bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <span className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl font-black text-sm ${
-                    index === 0 ? 'bg-yellow-100 text-yellow-600' : 
-                    index === 1 ? 'bg-slate-200 text-slate-600' : 
-                    'bg-slate-100 text-slate-500 dark:bg-slate-700'
-                  }`}>
+                  <span className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-xl font-black text-sm ${index === 0 ? 'bg-yellow-100 text-yellow-600' :
+                      index === 1 ? 'bg-slate-200 text-slate-600' :
+                        'bg-slate-100 text-slate-500 dark:bg-slate-700'
+                    }`}>
                     #{index + 1}
                   </span>
                   <div className="min-w-0">
@@ -123,7 +121,7 @@ export default function Stage2({ rankings, labelToModel, aggregateRankings }) {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="text-right ml-4">
                   <p className="text-[10px] uppercase font-bold text-slate-400">Avg Rank</p>
                   <p className="text-lg font-black text-blue-500 dark:text-blue-400 leading-none">

@@ -42,7 +42,7 @@ const Main = () => {
         loadConversation(currentConversationId);
       }
     }
-  }, [isLLM, currentConversationId]);
+  }, [isLLM, currentConversationId, loadConversations, loadConversation]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -92,7 +92,7 @@ const Main = () => {
         <div className="flex items-center gap-2">
           {isLLM ?
             <Sparkles className="text-purple-500 animate-pulse" size={20} />
-          : <div className="w-3 h-3 bg-blue-500 rounded-full" />}
+            : <div className="w-3 h-3 bg-blue-500 rounded-full" />}
           <h1 className="text-lg text-gray-700 dark:text-gray-200">
             {isLLM ? "LLM Council" : "Normal AiChat"}
           </h1>
@@ -110,17 +110,17 @@ const Main = () => {
           /* PREVIOUS STYLE: Left-aligned Gradient Welcome */
           <div className="max-w-4xl mx-auto mt-12 px-6">
             <div className="text-5xl font-semibold">
-              <p className="bg-gradient-to-r from-[#4b90ff] to-[#ff5546] bg-clip-text text-transparent inline-block">
+              <p className="bg-linear-to-r from-[#4b90ff] to-[#ff5546] bg-clip-text text-transparent inline-block">
                 {isLLM ? "Hello, Council User" : "Hello, User"}
               </p>
             </div>
             <p className="text-4xl text-gray-300 dark:text-gray-700 font-medium mt-2">
               {isLLM ?
                 "How can the council assist your query?"
-              : "How can I help you today?"}
+                : "How can I help you today?"}
             </p>
           </div>
-        : <div className="max-w-4xl mx-auto px-4 py-8 space-y-10">
+          : <div className="max-w-4xl mx-auto px-4 py-8 space-y-10">
             {chatMessages.map((msg, index) => (
               <div key={index} className="flex flex-col">
                 {msg.role === "user" ?
@@ -145,7 +145,7 @@ const Main = () => {
                       alt=""
                     />
                   </div>
-                : /* Assistant / Council Message */
+                  : /* Assistant / Council Message */
                   <div className="flex items-start gap-4 mb-4">
                     <div className="p-2 bg-blue-50 dark:bg-slate-800 rounded-full h-fit shadow-sm">
                       <Sparkles
@@ -156,8 +156,8 @@ const Main = () => {
                     <div className="flex-1 space-y-6 overflow-hidden">
                       {/* Normal Normal AiChat Mode */}
                       {!isLLM && (
-                       <div
-          className="
+                        <div
+                          className="
             prose prose-slate dark:prose-invert 
             max-w-none 
             prose-p:leading-relaxed 
@@ -169,11 +169,11 @@ const Main = () => {
             prose-headings:font-semibold
             text-base md:text-[16px]
           "
-        >
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {msg.text || msg.content}
-          </ReactMarkdown>
-        </div>
+                        >
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.text || msg.content}
+                          </ReactMarkdown>
+                        </div>
                       )}
 
                       {/* LLM Council Mode (Multi-Stage Rendering) */}
@@ -233,9 +233,9 @@ const Main = () => {
         {isActiveLoading && (
           <div className="max-w-4xl mx-auto px-16 py-4">
             <div className="flex flex-col gap-2 w-full animate-pulse">
-              <hr className="rounded-md border-none bg-gray-100 dark:bg-slate-800 h-4 bg-gradient-to-r from-[#81afff] via-[#ffffff] to-[#81afff] bg-[length:800px_50px]" />
-              <hr className="rounded-md border-none bg-gray-100 dark:bg-slate-800 h-4 bg-gradient-to-r from-[#81afff] via-[#ffffff] to-[#81afff] bg-[length:800px_50px]" />
-              <hr className="rounded-md border-none bg-gray-100 dark:bg-slate-800 h-4 w-[70%] bg-gradient-to-r from-[#81afff] via-[#ffffff] to-[#81afff] bg-[length:800px_50px]" />
+              <hr className="rounded-md border-none bg-gray-100 dark:bg-slate-800 h-4 bg-linear-to-r from-[#81afff] via-[#ffffff] to-[#81afff] bg-size-[800px_50px]" />
+              <hr className="rounded-md border-none bg-gray-100 dark:bg-slate-800 h-4 bg-linear-to-r from-[#81afff] via-[#ffffff] to-[#81afff] bg-size-[800px_50px]" />
+              <hr className="rounded-md border-none bg-gray-100 dark:bg-slate-800 h-4 w-[70%] bg-linear-to-r from-[#81afff] via-[#ffffff] to-[#81afff] bg-size-[800px_50px]" />
             </div>
           </div>
         )}
