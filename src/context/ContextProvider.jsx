@@ -12,6 +12,14 @@ const ContextProvider = ({ children }) => {
   const [user, setUser] = useState(
     JSON.parse(localStorage.getItem("council_user")) || null
   );
+  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
+
+  // ✅ INITIALIZE AUTH ON MOUNT
+  useEffect(() => {
+    const savedUser = JSON.parse(localStorage.getItem("council_user")) || null;
+    setUser(savedUser);
+    setIsAuthInitialized(true);
+  }, []);
 
   // =========================
   // NORMAL CHAT STATE
@@ -20,6 +28,7 @@ const ContextProvider = ({ children }) => {
   const [PageView, setPageView] = useState("llm-chat");
   const [loading, setLoading] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [chatError, setChatError] = useState("");
 
   const [currentChat, setCurrentChat] = useState({
     id: Date.now(),
@@ -93,10 +102,15 @@ const ContextProvider = ({ children }) => {
     try {
       const convs = await api.listConversations(user.id);
       setConversations(convs);
+
+      // ✅ AUTO-SELECT FIRST CONVERSATION IF EXISTS AND NONE SELECTED
+      if (convs.length > 0 && !currentConversationId) {
+        setCurrentConversationId(convs[0].id);
+      }
     } catch (error) {
       console.error("Failed to load conversations:", error);
     }
-  }, [user]);
+  }, [user, currentConversationId]);
 
   const loadConversation = useCallback(async (id) => {
     try {
@@ -257,6 +271,7 @@ const ContextProvider = ({ children }) => {
 
     setLoading(true);
     setInput("");
+    setChatError("");  // ✅ Clear previous errors
 
     try {
 
@@ -290,6 +305,8 @@ const ContextProvider = ({ children }) => {
       });
 
     } catch (error) {
+      const errorMsg = error.message || "Failed to get response from AI";
+      setChatError(errorMsg);  // ✅ Show error to user
       console.error("OpenRouter Error:", error);
     } finally {
       setLoading(false);
@@ -313,6 +330,7 @@ const ContextProvider = ({ children }) => {
     login,
     register,
     logout,
+    isAuthInitialized,
 
     input,
     setInput,
@@ -320,6 +338,8 @@ const ContextProvider = ({ children }) => {
     loading,
     showResult,
     setShowResult,
+    chatError,
+    setChatError,
 
     onSent,
     currentChat,

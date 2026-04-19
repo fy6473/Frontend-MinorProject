@@ -26,6 +26,8 @@ const Main = () => {
     currentConversationId,
     loadConversations,
     loadConversation,
+    chatError,
+    setChatError,
   } = useContext(Context);
 
   const [listening, setListening] = useState(false);
@@ -106,6 +108,22 @@ const Main = () => {
 
       {/* MAIN CONTENT AREA */}
       <div ref={chatContainerRef} className="flex-1 overflow-y-auto">
+        {/* ✅ ERROR MESSAGE DISPLAY */}
+        {chatError && !isLLM && (
+          <div className="max-w-4xl mx-auto m-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start justify-between">
+            <div className="flex flex-col gap-1">
+              <p className="font-semibold text-red-700 dark:text-red-400">Error</p>
+              <p className="text-sm text-red-600 dark:text-red-300">{chatError}</p>
+            </div>
+            <button
+              onClick={() => setChatError("")}
+              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+            >
+              <X size={18} />
+            </button>
+          </div>
+        )}
+
         {chatMessages.length === 0 ?
           /* PREVIOUS STYLE: Left-aligned Gradient Welcome */
           <div className="max-w-4xl mx-auto mt-12 px-6">

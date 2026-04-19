@@ -13,7 +13,7 @@ export async function callOpenRouter(messages) {
       return {
         role: "user",
         content: [
-          { type: "text", text: msg.text },
+          { type: "text", text: msg.text || "" },
           {
             type: "image_url",
             image_url: { url: msg.image },
@@ -24,7 +24,7 @@ export async function callOpenRouter(messages) {
 
     return {
       role: msg.role,
-      content: msg.text,
+      content: msg.text || msg.content || "",
     };
   });
 
@@ -39,18 +39,8 @@ export async function callOpenRouter(messages) {
       },
       body: JSON.stringify({
         model: "openrouter/auto",
-        temperature: 0.3,
-        messages: [
-          {
-            role: "system",
-            content: `You are a Markdown content generator.
-            1. Return response in strict raw Markdown format.
-            2. Do NOT wrap entire response in a code block.
-            3. Use headers (#, ##), bullet points (-), and bold (**) properly.
-            4. Maintain clear spacing between sections.`,
-          },
-          ...formattedMessages,
-        ],
+        temperature: 0.7,
+        messages: formattedMessages,
       }),
     }
   );

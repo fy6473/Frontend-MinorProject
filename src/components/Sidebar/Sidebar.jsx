@@ -9,7 +9,8 @@ import {
   Settings,
   User,
   Sparkles,
-  Layers
+  Layers,
+  LogOut
 } from "lucide-react";
 import "./Sidebar.css";
 
@@ -27,6 +28,7 @@ const Sidebar = () => {
     openChat,
     PageView,
     setPageView,
+    logout,
   } = useContext(Context);
 
   return (
@@ -154,6 +156,15 @@ const Sidebar = () => {
             {extended && <p className="text-sm font-medium">{item.label}</p>}
           </div>
         ))}
+
+        {/* ✅ NEW: LOGOUT BUTTON */}
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 p-2 rounded-xl cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/30 transition text-red-600 dark:text-red-400"
+        >
+          <LogOut size={18} />
+          {extended && <p className="text-sm font-medium">Logout</p>}
+        </button>
       </div>
     </div>
   );
